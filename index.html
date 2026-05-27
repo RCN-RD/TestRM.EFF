@@ -11,14 +11,20 @@
       max-width: 700px;
       margin: 30px auto;
       padding: 20px;
-      background: #f3f4f6;
+      background:
+        linear-gradient(
+          180deg,
+          #fff7fb,
+          #ffeef6
+        );
     }
 
     .card {
-      background: white;
+      background: rgba(255,255,255,0.92);
       padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      border-radius: 24px;
+      box-shadow:
+        0 10px 30px rgba(255,182,217,0.18);
     }
 
     h2 {
@@ -31,7 +37,7 @@
       display: block;
       font-weight: bold;
       margin-top: 16px;
-      color: #0066cc;
+      color: #ff69b4;
       font-size: 16px;
     }
 
@@ -43,8 +49,8 @@
       padding: 10px;
       margin-top: 6px;
       box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      border: 1px solid #ffd1e6;
       font-size: 15px;
     }
 
@@ -54,7 +60,7 @@
     }
 
     input[readonly] {
-      background: #f9fafb;
+      background: #fff7fb;
     }
 
     .toggle-box {
@@ -68,9 +74,9 @@
       align-items: center;
       gap: 8px;
       padding: 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      background: #f9fafb;
+      border: 1px solid #ffd1e6;
+      border-radius: 14px;
+      background: #fff7fb;
       font-weight: normal;
       cursor: pointer;
       color: #111827;
@@ -83,27 +89,37 @@
 
     button {
 
-  background: #ffb6d9;
+      background: #ffb6d9;
 
-  color: white;
+      color: white;
 
-  border: none;
+      border: none;
 
-  margin-top: 24px;
+      margin-top: 24px;
 
-  cursor: pointer;
+      cursor: pointer;
 
-  font-weight: bold;
+      font-weight: bold;
 
-}
-  border-radius: 999px;
+      border-radius: 999px;
 
-  box-shadow:
-    0 10px 22px rgba(255,143,199,0.35);
+      box-shadow:
+        0 10px 22px rgba(255,143,199,0.35);
 
-}
+      transition: all 0.25s ease;
+
+      font-size: 18px;
+
+      padding: 15px;
+
+    }
+
     button:hover {
-      background: #1d4ed8;
+
+      background: #ff8fc7;
+
+      transform: translateY(-2px);
+
     }
 
     .success {
@@ -115,55 +131,56 @@
 
     .popup {
 
-  position: fixed;
+      position: fixed;
 
-  top: 50%;
+      top: 50%;
 
-  left: 50%;
+      left: 50%;
 
-  transform:
-    translate(-50%, -50%)
-    scale(0.8);
+      transform:
+        translate(-50%, -50%)
+        scale(0.8);
 
-  background: linear-gradient(
-    135deg,
-    #ffb6d9,
-    #ff8fc7
-  );
+      background: linear-gradient(
+        135deg,
+        #ffb6d9,
+        #ff8fc7
+      );
 
-  color: white;
+      color: white;
 
-  padding:
-    22px 34px;
+      padding:
+        22px 34px;
 
-  border-radius: 24px;
+      border-radius: 24px;
 
-  font-size: 22px;
+      font-size: 22px;
 
-  font-weight: bold;
+      font-weight: bold;
 
-  box-shadow:
-    0 16px 40px rgba(255,105,180,0.35);
+      box-shadow:
+        0 16px 40px rgba(255,105,180,0.35);
 
-  opacity: 0;
+      opacity: 0;
 
-  pointer-events: none;
+      pointer-events: none;
 
-  transition: all 0.3s ease;
+      transition: all 0.3s ease;
 
-  z-index: 9999;
+      z-index: 9999;
 
-}
+    }
 
-.popup.show {
+    .popup.show {
 
-  opacity: 1;
+      opacity: 1;
 
-  transform:
-    translate(-50%, -50%)
-    scale(1);
+      transform:
+        translate(-50%, -50%)
+        scale(1);
 
-}
+    }
+
   </style>
 
 </head>
@@ -172,7 +189,7 @@
 
   <div class="card">
 
-    <h2>RCN Test RM EFF.</h2>
+    <h2>✨💖 RCN Test RM EFF. 💖✨</h2>
 
     <!-- TESTER -->
 
@@ -183,7 +200,10 @@
 
     <!-- PRODUCT -->
 
-    <label>1. เลือกสินค้า (รอสักครู่ชื่อสินค้าจะขึ้นให้เลือก) *</label>
+    <label>
+      1. เลือกสินค้า
+      (รอสักครู่ชื่อสินค้าจะขึ้นให้เลือก) *
+    </label>
 
     <div id="sampleName" class="toggle-box"></div>
 
@@ -224,38 +244,14 @@
     <textarea id="favoriteReason"></textarea>
 
     <!-- BUTTON -->
-    
-    function showPopup(message) {
-
-  const popup =
-    document.getElementById(
-      "popup"
-    );
-
-  popup.innerText =
-    message;
-
-  popup.classList.add(
-    "show"
-  );
-
-  setTimeout(() => {
-
-    popup.classList.remove(
-      "show"
-    );
-
-  }, 2500);
-
-}
 
     <button onclick="submitForm()">
-     🎀 บันทึกข้อมูล 🎀
+      🎀 บันทึกข้อมูล 🎀
     </button>
 
-    <div id="message" class="success"></div>
-
   </div>
+
+  <div id="popup" class="popup"></div>
 
   <script>
 
@@ -667,6 +663,34 @@
     }
 
     /* =========================
+       POPUP
+    ========================= */
+
+    function showPopup(message) {
+
+      const popup =
+        document.getElementById(
+          "popup"
+        );
+
+      popup.innerText =
+        message;
+
+      popup.classList.add(
+        "show"
+      );
+
+      setTimeout(() => {
+
+        popup.classList.remove(
+          "show"
+        );
+
+      }, 2500);
+
+    }
+
+    /* =========================
        SUBMIT
     ========================= */
 
@@ -696,58 +720,53 @@
         document.querySelector(
           'input[name="favoriteSide"]:checked'
         )?.value || "";
+
+      /* =========================
+         VALIDATE
+      ========================= */
+
       if (!selectedId) {
 
-  alert("⚠️ กรุณาเลือกสินค้า");
+        alert("⚠️ กรุณาเลือกสินค้า");
 
-  document.getElementById(
-    "sampleName"
-  ).scrollIntoView({
-    behavior: "smooth"
-  });
+        document.getElementById(
+          "sampleName"
+        ).scrollIntoView({
+          behavior: "smooth"
+        });
 
-  return;
-}
+        return;
+      }
 
-if (!sameOrNot) {
+      if (!sameOrNot) {
 
-  alert("⚠️ กรุณาตอบข้อ 4");
+        alert("⚠️ กรุณาตอบข้อ 4");
 
-  document.getElementById(
-    "sameOrNot"
-  ).scrollIntoView({
-    behavior: "smooth"
-  });
+        document.getElementById(
+          "sameOrNot"
+        ).scrollIntoView({
+          behavior: "smooth"
+        });
 
-  return;
-}
+        return;
+      }
 
-if (!favoriteSide) {
+      if (!favoriteSide) {
 
-  alert("⚠️ กรุณาตอบข้อ 5");
+        alert("⚠️ กรุณาตอบข้อ 5");
 
-  document.getElementById(
-    "favoriteSide"
-  ).scrollIntoView({
-    behavior: "smooth"
-  });
+        document.getElementById(
+          "favoriteSide"
+        ).scrollIntoView({
+          behavior: "smooth"
+        });
 
-  return;
-}
+        return;
+      }
 
-/* =========================
-   DATA
-========================= */
-
-const data = {
-
-  testerName:
-    document.getElementById(
-      "testerName"
-    ).value,
-
-  ...
-};
+      /* =========================
+         DATA
+      ========================= */
 
       const data = {
 
@@ -806,11 +825,11 @@ const data = {
           data
         );
 
-     showPopup(
-  "🎀 ขอบคุณค่า "
-  + data.testerName
-  + " 💖"
-);
+        showPopup(
+          "🎀 ขอบคุณค่า "
+          + data.testerName
+          + " 💖"
+        );
 
         clearForm();
 
@@ -886,6 +905,6 @@ const data = {
     }
 
   </script>
-<div id="popup" class="popup"></div>
+
 </body>
 </html>
