@@ -113,6 +113,57 @@
       font-weight: bold;
     }
 
+    .popup {
+
+  position: fixed;
+
+  top: 50%;
+
+  left: 50%;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0.8);
+
+  background: linear-gradient(
+    135deg,
+    #ffb6d9,
+    #ff8fc7
+  );
+
+  color: white;
+
+  padding:
+    22px 34px;
+
+  border-radius: 24px;
+
+  font-size: 22px;
+
+  font-weight: bold;
+
+  box-shadow:
+    0 16px 40px rgba(255,105,180,0.35);
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: all 0.3s ease;
+
+  z-index: 9999;
+
+}
+
+.popup.show {
+
+  opacity: 1;
+
+  transform:
+    translate(-50%, -50%)
+    scale(1);
+
+}
   </style>
 
 </head>
@@ -173,6 +224,30 @@
     <textarea id="favoriteReason"></textarea>
 
     <!-- BUTTON -->
+    
+    function showPopup(message) {
+
+  const popup =
+    document.getElementById(
+      "popup"
+    );
+
+  popup.innerText =
+    message;
+
+  popup.classList.add(
+    "show"
+  );
+
+  setTimeout(() => {
+
+    popup.classList.remove(
+      "show"
+    );
+
+  }, 2500);
+
+}
 
     <button onclick="submitForm()">
      🎀 บันทึกข้อมูล 🎀
@@ -621,6 +696,58 @@
         document.querySelector(
           'input[name="favoriteSide"]:checked'
         )?.value || "";
+      if (!selectedId) {
+
+  alert("⚠️ กรุณาเลือกสินค้า");
+
+  document.getElementById(
+    "sampleName"
+  ).scrollIntoView({
+    behavior: "smooth"
+  });
+
+  return;
+}
+
+if (!sameOrNot) {
+
+  alert("⚠️ กรุณาตอบข้อ 4");
+
+  document.getElementById(
+    "sameOrNot"
+  ).scrollIntoView({
+    behavior: "smooth"
+  });
+
+  return;
+}
+
+if (!favoriteSide) {
+
+  alert("⚠️ กรุณาตอบข้อ 5");
+
+  document.getElementById(
+    "favoriteSide"
+  ).scrollIntoView({
+    behavior: "smooth"
+  });
+
+  return;
+}
+
+/* =========================
+   DATA
+========================= */
+
+const data = {
+
+  testerName:
+    document.getElementById(
+      "testerName"
+    ).value,
+
+  ...
+};
 
       const data = {
 
@@ -679,10 +806,11 @@
           data
         );
 
-        document.getElementById(
-          "message"
-        ).innerText =
-          "บันทึกข้อมูลเรียบร้อยแล้ว";
+     showPopup(
+  "🎀 ขอบคุณค่า "
+  + data.testerName
+  + " 💖"
+);
 
         clearForm();
 
@@ -758,6 +886,6 @@
     }
 
   </script>
-
+<div id="popup" class="popup"></div>
 </body>
 </html>
