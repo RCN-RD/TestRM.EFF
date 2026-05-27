@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>RCN Test RM EFF.</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #f3f4f6;
+    }
+
+    .card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 16px;
+      color: #0066cc;
+      font-size: 16px;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    input[readonly] {
+      background: #f9fafb;
+    }
+
+    .toggle-box {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .toggle-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #f9fafb;
+      font-weight: normal;
+      cursor: pointer;
+      color: #111827;
+    }
+
+    .toggle-option input {
+      width: auto;
+      margin: 0;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      margin-top: 24px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .success {
+      margin-top: 20px;
+      color: green;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+
+    <h2>RCN Test RM EFF.</h2>
+
+    <label>เลือกชื่อผู้ทดลอง* </label>
+    <select id="testerName" onchange="loadProducts()"></select>
+
+    <label>1. เลือกสินค้า *</label>
+    <select id="sampleName" onchange="setDate()"></select>
+
+    <label>วันที่แจกตัวอย่าง (ไม่ต้องกรอก)</label>
+    <input type="text" id="sampleDate" readonly>
+
+    <label>2. ซ้าย : ความรู้สึกขณะใช้</label>
+    <textarea id="leftFeeling"></textarea>
+
+    <label>3. ขวา : ความรู้สึกขณะใช้</label>
+    <textarea id="rightFeeling"></textarea>
+
+    <label>4. ซ้าย-ขวาเหมือนกันหรือไม่*</label>
+    <div id="sameOrNot" class="toggle-box"></div>
+
+    <label>4.1 อธิบายเหตุผลที่เลือกข้อ 4</label>
+    <textarea id="sameReason"></textarea>
+
+    <label>5. เลือกข้างที่ชอบ*</label>
+    <div id="favoriteSide" class="toggle-box"></div>
+
+    <label>5.1 อธิบายเหตุผลที่เลือกข้อ 5</label>
+    <textarea id="favoriteReason"></textarea>
+
+    <button onclick="submitForm()">บันทึกข้อมูล</button>
+
+    <div id="message" class="success"></div>
+
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyXwlyASsPm67LEC8F4waEFdfutU8P-gzIOpagtZJLJFtw9zTyMnEFbxEvYXNGAzZfK/exec";
+
+    let productData = [];
+
+    window.onload = function () {
+      loadTesterNames();
+      loadQuestion4List();
+      loadQuestion5List();
+    };
+
+    async function apiGet(action, params = {}) {
+      const url = new URL(API_URL);
+      url.searchParams.append("action", action);
+
+      Object.keys(params).forEach(key => {
+        url.searchParams.append(key, params[key]);
+      });
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+
+      return await response.json();
+    }
+
+    async function apiPost(action, data) {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: action,
+          data: data
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("API error: " + response.status);
+      }
+
+      return await response.json();
+    }
+
+    async function loadTesterNames() {
+      try {
+        const names = await apiGet("getTesterNames");
+
+        const select = document.getElementById("testerName");
+
+        select.innerHTML =
+          '<option value="">-- เลือกชื่อผู้ทดลอง --</option>';
+
+        names.forEach(function(name) {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          select.appendChild(option);
+        });
+
+      } catch (error) {
+        alert("ERROR loadTesterNames: " + error.message);
+      }
+    }
+
+    async function loadProducts() {
+      const testerName =
+        document.getElementById("testerName").value;
+
+      const sampleSelect =
+        document.getElementById("sampleName");
+
+      sampleSelect.innerHTML =
+        '<option value="">-- เลือกสินค้า --</option>';
+
+      document.getElementById("sampleDate").value = "";
+
+      productData = [];
+
+      if (!testerName) return;
+
+      try {
+        const products = await apiGet("getProductsByTester", {
+          testerName: testerName
+        });
+
+        productData = products;
+
+        products.forEach(function(item) {
+          const option = document.createElement("option");
+
+          option.value = item.testerId;
+
+          option.textContent =
+            item.testerId + " | " + item.sampleName;
+
+          sampleSelect.appendChild(option);
+        });
+
+      } catch (error) {
+        alert("ERROR loadProducts: " + error.message);
+      }
+    }
+
+    function setDate() {
+      const testerId =
+        document.getElementById("sampleName").value;
+
+      const found =
+        productData.find(item =>
+          item.testerId === testerId
+        );
+
+      document.getElementById("sampleDate").value =
+        found ? found.sampleDate : "";
+    }
+
+    async function loadQuestion4List() {
+      try {
+        const list = await apiGet("getQuestion4List");
+
+        fillToggle(
+          "sameOrNot",
+          list,
+          "sameOrNot"
+        );
+
+      } catch (error) {
+        alert("ERROR loadQuestion4List: " + error.message);
+      }
+    }
+
+    async function loadQuestion5List() {
+      try {
+        const list = await apiGet("getQuestion5List");
+
+        fillToggle(
+          "favoriteSide",
+          list,
+          "favoriteSide"
+        );
+
+      } catch (error) {
+        alert("ERROR loadQuestion5List: " + error.message);
+      }
+    }
+
+    function fillToggle(elementId, list, name) {
+      const container =
+        document.getElementById(elementId);
+
+      container.innerHTML = "";
+
+      list.forEach(function(item) {
+        const label =
+          document.createElement("label");
+
+        label.className =
+          "toggle-option";
+
+        const input =
+          document.createElement("input");
+
+        input.type = "radio";
+        input.name = name;
+        input.value = item;
+
+        const span =
+          document.createElement("span");
+
+        span.textContent = item;
+
+        label.appendChild(input);
+        label.appendChild(span);
+
+        container.appendChild(label);
+      });
+    }
+
+    async function submitForm() {
+      const selectedId =
+        document.getElementById("sampleName").value;
+
+      const found =
+        productData.find(item =>
+          item.testerId === selectedId
+        );
+
+      const sameOrNot =
+        document.querySelector(
+          'input[name="sameOrNot"]:checked'
+        )?.value || "";
+
+      const favoriteSide =
+        document.querySelector(
+          'input[name="favoriteSide"]:checked'
+        )?.value || "";
+
+      const data = {
+        testerName:
+          document.getElementById("testerName").value,
+
+        sampleId:
+          found ? found.testerId : "",
+
+        sampleName:
+          found ? found.sampleName : "",
+
+        sampleDate:
+          document.getElementById("sampleDate").value,
+
+        leftFeeling:
+          document.getElementById("leftFeeling").value,
+
+        rightFeeling:
+          document.getElementById("rightFeeling").value,
+
+        sameOrNot:
+          sameOrNot,
+
+        sameReason:
+          document.getElementById("sameReason").value,
+
+        favoriteSide:
+          favoriteSide,
+
+        favoriteReason:
+          document.getElementById("favoriteReason").value
+      };
+
+      try {
+        await apiPost("saveResponse", data);
+
+        document.getElementById("message").innerText =
+          "บันทึกข้อมูลเรียบร้อยแล้ว";
+
+        clearForm();
+
+      } catch (error) {
+        alert("ERROR saveResponse: " + error.message);
+      }
+    }
+
+    function clearForm() {
+      document.getElementById("testerName").value = "";
+
+      document.getElementById("sampleName").innerHTML =
+        '<option value="">-- เลือกสินค้า --</option>';
+
+      document.getElementById("sampleDate").value = "";
+
+      document.getElementById("leftFeeling").value = "";
+      document.getElementById("rightFeeling").value = "";
+      document.getElementById("sameReason").value = "";
+      document.getElementById("favoriteReason").value = "";
+
+      const checkedSame =
+        document.querySelector(
+          'input[name="sameOrNot"]:checked'
+        );
+
+      if (checkedSame) checkedSame.checked = false;
+
+      const checkedFavorite =
+        document.querySelector(
+          'input[name="favoriteSide"]:checked'
+        );
+
+      if (checkedFavorite) checkedFavorite.checked = false;
+
+      productData = [];
+    }
+  </script>
+
+</body>
+</html>
