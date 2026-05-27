@@ -2,89 +2,162 @@
 <html>
 <head>
   <meta charset="UTF-8">
+
+  <!-- มือถือ -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
   <title>RCN Test RM EFF.</title>
 
   <style>
 
     body {
+
       font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 30px auto;
-      padding: 20px;
+
+      max-width: 720px;
+
+      margin: 0 auto;
+
+      padding: 12px;
+
       background:
         linear-gradient(
           180deg,
           #fff7fb,
           #ffeef6
         );
+
+      font-size: 18px;
+
     }
 
     .card {
-      background: rgba(255,255,255,0.92);
-      padding: 24px;
-      border-radius: 24px;
+
+      background: white;
+
+      padding: 18px;
+
+      border-radius: 18px;
+
       box-shadow:
-        0 10px 30px rgba(255,182,217,0.18);
+        0 6px 18px rgba(255,182,217,0.18);
+
     }
 
     h2 {
+
       text-align: center;
+
+      font-size: 24px;
+
       margin-top: 0;
+
       margin-bottom: 24px;
+
+      color: #ff69b4;
+
     }
 
     label {
+
       display: block;
+
       font-weight: bold;
-      margin-top: 16px;
-      color: #ff69b4;
-      font-size: 16px;
+
+      margin-top: 22px;
+
+      color: #202124;
+
+      font-size: 18px;
+
+      line-height: 1.5;
+
     }
 
     input,
     select,
     textarea,
     button {
+
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
+
+      padding: 14px;
+
+      margin-top: 8px;
+
       box-sizing: border-box;
-      border-radius: 12px;
+
+      border-radius: 10px;
+
       border: 1px solid #ffd1e6;
-      font-size: 15px;
+
+      font-size: 18px;
+
+      line-height: 1.4;
+
     }
 
     textarea {
-      min-height: 90px;
+
+      min-height: 120px;
+
       resize: vertical;
+
     }
 
     input[readonly] {
+
       background: #fff7fb;
+
     }
 
     .toggle-box {
+
       margin-top: 8px;
+
       display: grid;
-      gap: 8px;
+
+      gap: 10px;
+
     }
 
     .toggle-option {
+
       display: flex;
+
       align-items: center;
-      gap: 8px;
-      padding: 10px;
+
+      gap: 12px;
+
+      padding: 14px;
+
       border: 1px solid #ffd1e6;
+
       border-radius: 14px;
-      background: #fff7fb;
-      font-weight: normal;
+
+      background: white;
+
+      font-size: 18px;
+
+      line-height: 1.4;
+
+      color: #202124;
+
       cursor: pointer;
-      color: #111827;
+
     }
 
     .toggle-option input {
-      width: auto;
+
+      width: 22px;
+
+      height: 22px;
+
+      flex-shrink: 0;
+
       margin: 0;
+
     }
 
     button {
@@ -95,7 +168,7 @@
 
       border: none;
 
-      margin-top: 24px;
+      margin-top: 28px;
 
       cursor: pointer;
 
@@ -103,14 +176,14 @@
 
       border-radius: 999px;
 
+      font-size: 20px;
+
+      padding: 16px;
+
       box-shadow:
         0 10px 22px rgba(255,143,199,0.35);
 
       transition: all 0.25s ease;
-
-      font-size: 18px;
-
-      padding: 15px;
 
     }
 
@@ -120,13 +193,6 @@
 
       transform: translateY(-2px);
 
-    }
-
-    .success {
-      margin-top: 20px;
-      color: green;
-      text-align: center;
-      font-weight: bold;
     }
 
     .popup {
@@ -158,6 +224,8 @@
 
       font-weight: bold;
 
+      text-align: center;
+
       box-shadow:
         0 16px 40px rgba(255,105,180,0.35);
 
@@ -181,6 +249,50 @@
 
     }
 
+    /* มือถือเล็ก */
+
+    @media (max-width: 480px) {
+
+      body {
+
+        padding: 8px;
+
+        font-size: 19px;
+
+      }
+
+      .card {
+
+        padding: 16px;
+
+        border-radius: 14px;
+
+      }
+
+      h2 {
+
+        font-size: 23px;
+
+      }
+
+      label {
+
+        font-size: 19px;
+
+      }
+
+      input,
+      select,
+      textarea,
+      button,
+      .toggle-option {
+
+        font-size: 19px;
+
+      }
+
+    }
+
   </style>
 
 </head>
@@ -195,7 +307,8 @@
 
     <label>เลือกชื่อผู้ทดลอง*</label>
 
-    <select id="testerName" onchange="loadProducts()">
+    <select id="testerName"
+            onchange="loadProducts()">
     </select>
 
     <!-- PRODUCT -->
@@ -205,41 +318,64 @@
       (รอสักครู่ชื่อสินค้าจะขึ้นให้เลือก) *
     </label>
 
-    <div id="sampleName" class="toggle-box"></div>
+    <div id="sampleName"
+         class="toggle-box">
+    </div>
 
     <!-- DATE -->
 
-    <label>วันที่แจกตัวอย่าง (ไม่ต้องกรอก)</label>
+    <label>
+      วันที่แจกตัวอย่าง
+      (ไม่ต้องกรอก)
+    </label>
 
-    <input type="text" id="sampleDate" readonly>
+    <input type="text"
+           id="sampleDate"
+           readonly>
 
     <!-- QUESTION -->
 
-    <label>2. ซ้าย : ความรู้สึกขณะใช้</label>
+    <label>
+      2. ซ้าย : ความรู้สึกขณะใช้
+    </label>
 
     <textarea id="leftFeeling"></textarea>
 
-    <label>3. ขวา : ความรู้สึกขณะใช้</label>
+    <label>
+      3. ขวา : ความรู้สึกขณะใช้
+    </label>
 
     <textarea id="rightFeeling"></textarea>
 
     <!-- QUESTION 4 -->
 
-    <label>4. ซ้าย-ขวาเหมือนกันหรือไม่*</label>
+    <label>
+      4. ซ้าย-ขวาเหมือนกันหรือไม่*
+    </label>
 
-    <div id="sameOrNot" class="toggle-box"></div>
+    <div id="sameOrNot"
+         class="toggle-box">
+    </div>
 
-    <label>4.1 อธิบายเหตุผลที่เลือกข้อ 4</label>
+    <label>
+      4.1 อธิบายเหตุผลที่เลือกข้อ 4
+    </label>
 
     <textarea id="sameReason"></textarea>
 
     <!-- QUESTION 5 -->
 
-    <label>5. เลือกข้างที่ชอบ*</label>
+    <label>
+      5. เลือกข้างที่ชอบ*
+    </label>
 
-    <div id="favoriteSide" class="toggle-box"></div>
+    <div id="favoriteSide"
+         class="toggle-box">
+    </div>
 
-    <label>5.1 อธิบายเหตุผลที่เลือกข้อ 5</label>
+    <label>
+      5.1 อธิบายเหตุผลที่เลือกข้อ 5
+    </label>
 
     <textarea id="favoriteReason"></textarea>
 
@@ -251,7 +387,11 @@
 
   </div>
 
-  <div id="popup" class="popup"></div>
+  <!-- POPUP -->
+
+  <div id="popup"
+       class="popup">
+  </div>
 
   <script>
 
@@ -278,7 +418,10 @@
        API GET
     ========================= */
 
-    async function apiGet(action, params = {}) {
+    async function apiGet(
+      action,
+      params = {}
+    ) {
 
       const url =
         new URL(API_URL);
@@ -288,14 +431,15 @@
         action
       );
 
-      Object.keys(params).forEach(key => {
+      Object.keys(params)
+        .forEach(key => {
 
-        url.searchParams.append(
-          key,
-          params[key]
-        );
+          url.searchParams.append(
+            key,
+            params[key]
+          );
 
-      });
+        });
 
       const response =
         await fetch(url);
@@ -303,8 +447,8 @@
       if (!response.ok) {
 
         throw new Error(
-          "API error: " +
-          response.status
+          "API error: "
+          + response.status
         );
 
       }
@@ -317,7 +461,10 @@
        API POST
     ========================= */
 
-    async function apiPost(action, data) {
+    async function apiPost(
+      action,
+      data
+    ) {
 
       const response =
         await fetch(API_URL, {
@@ -337,8 +484,8 @@
       if (!response.ok) {
 
         throw new Error(
-          "API error: " +
-          response.status
+          "API error: "
+          + response.status
         );
 
       }
@@ -472,9 +619,9 @@
             );
 
           span.textContent =
-            item.testerId +
-            " | " +
-            item.sampleName;
+            item.testerId
+            + " | "
+            + item.sampleName;
 
           label.appendChild(
             input
@@ -721,13 +868,13 @@
           'input[name="favoriteSide"]:checked'
         )?.value || "";
 
-      /* =========================
-         VALIDATE
-      ========================= */
+      /* VALIDATE */
 
       if (!selectedId) {
 
-        alert("⚠️ กรุณาเลือกสินค้า");
+        alert(
+          "⚠️ กรุณาเลือกสินค้า"
+        );
 
         document.getElementById(
           "sampleName"
@@ -736,11 +883,14 @@
         });
 
         return;
+
       }
 
       if (!sameOrNot) {
 
-        alert("⚠️ กรุณาตอบข้อ 4");
+        alert(
+          "⚠️ กรุณาตอบข้อ 4"
+        );
 
         document.getElementById(
           "sameOrNot"
@@ -749,11 +899,14 @@
         });
 
         return;
+
       }
 
       if (!favoriteSide) {
 
-        alert("⚠️ กรุณาตอบข้อ 5");
+        alert(
+          "⚠️ กรุณาตอบข้อ 5"
+        );
 
         document.getElementById(
           "favoriteSide"
@@ -762,11 +915,10 @@
         });
 
         return;
+
       }
 
-      /* =========================
-         DATA
-      ========================= */
+      /* DATA */
 
       const data = {
 
