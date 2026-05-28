@@ -763,60 +763,108 @@
 
     async function submitForm() {
 
-      const selectedRadio =
-        document.querySelector(
-          'input[name="sampleName"]:checked'
-        );
+  const selectedRadio =
+    document.querySelector(
+      'input[name="sampleName"]:checked'
+    );
 
-      const selectedId =
-        selectedRadio
-        ? selectedRadio.value
-        : "";
+  const selectedId =
+    selectedRadio
+    ? selectedRadio.value
+    : "";
 
-      const found =
-        productData.find(item =>
-          item.testerId === selectedId
-        );
+  const found =
+    productData.find(item =>
+      String(item.testerId).trim()
+      ===
+      String(selectedId).trim()
+    );
 
-      const sameOrNot =
-        document.querySelector(
-          'input[name="sameOrNot"]:checked'
-        )?.value || "";
+  const sameOrNot =
+    document.querySelector(
+      'input[name="sameOrNot"]:checked'
+    )?.value || "";
 
-      const favoriteSide =
-        document.querySelector(
-          'input[name="favoriteSide"]:checked'
-        )?.value || "";
+  const favoriteSide =
+    document.querySelector(
+      'input[name="favoriteSide"]:checked'
+    )?.value || "";
 
-      if (!selectedId) {
+  if (!selectedId) {
+    alert("⚠️ กรุณาเลือกสินค้า");
+    return;
+  }
 
-        alert(
-          "⚠️ กรุณาเลือกสินค้า"
-        );
+  if (!sameOrNot) {
+    alert("⚠️ กรุณาตอบข้อ 4");
+    return;
+  }
 
-        return;
+  if (!favoriteSide) {
+    alert("⚠️ กรุณาตอบข้อ 5");
+    return;
+  }
 
-      }
+  const data = {
 
-      if (!sameOrNot) {
+    testerName:
+      document.getElementById(
+        "testerName"
+      ).value,
 
-        alert(
-          "⚠️ กรุณาตอบข้อ 4"
-        );
+    sampleId:
+      found?.testerId || "",
 
-        return;
+    sampleName:
+      found?.sampleName || "",
 
-      }
+    sampleDate:
+      document.getElementById(
+        "sampleDate"
+      ).value,
 
-      if (!favoriteSide) {
+    leftFeeling:
+      document.getElementById(
+        "leftFeeling"
+      ).value,
 
-        alert(
-          "⚠️ กรุณาตอบข้อ 5"
-        );
+    rightFeeling:
+      document.getElementById(
+        "rightFeeling"
+      ).value,
 
-        return;
+    sameOrNot:
+      sameOrNot,
 
-      }
+    sameReason:
+      document.getElementById(
+        "sameReason"
+      ).value,
+
+    favoriteSide:
+      favoriteSide,
+
+    favoriteReason:
+      document.getElementById(
+        "favoriteReason"
+      ).value
+
+  };
+
+  await apiPost(
+    "saveResponse",
+    data
+  );
+
+  showPopup(
+    "🎀 ขอบคุณค่า "
+    + data.testerName
+    + " 💖"
+  );
+
+  clearForm();
+
+}
 
       const data = {
 
