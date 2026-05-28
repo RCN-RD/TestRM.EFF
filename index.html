@@ -52,7 +52,10 @@
       line-height: 1.5;
     }
 
-    input, select, textarea, button {
+    input,
+    select,
+    textarea,
+    button {
       width: 100%;
       padding: 14px;
       margin-top: 8px;
@@ -118,6 +121,21 @@
       transform: translateY(-2px);
     }
 
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .hint {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fff7fb;
+      color: #555;
+      font-size: 15px;
+      border: 1px dashed #ffd1e6;
+    }
+
     .popup {
       position: fixed;
       top: 50%;
@@ -140,6 +158,34 @@
     .popup.show {
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 8px;
+        font-size: 19px;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 14px;
+      }
+
+      h2 {
+        font-size: 23px;
+      }
+
+      label {
+        font-size: 19px;
+      }
+
+      input,
+      select,
+      textarea,
+      button,
+      .toggle-option {
+        font-size: 19px;
+      }
     }
   </style>
 </head>
@@ -181,7 +227,7 @@
     <label>5.1 อธิบายเหตุผลที่เลือกข้อ 5</label>
     <textarea id="favoriteReason"></textarea>
 
-    <button onclick="submitForm()">🎀 บันทึกข้อมูล 🎀</button>
+    <button id="submitBtn" onclick="submitForm()">🎀 บันทึกข้อมูล 🎀</button>
   </div>
 
   <div id="popup" class="popup"></div>
@@ -200,13 +246,19 @@
 
     async function apiGet(action, params = {}) {
       const url = new URL(API_URL);
+
       url.searchParams.append("action", action);
 
-      Object.keys(params).forEach(key => {
+      Object.keys(params).forEach(function(key) {
         url.searchParams.append(key, params[key]);
       });
 
-      const response = await fetch(url);
+      const response = await fetch(url.toString());
+
+      if (!response.ok) {
+        throw new Error("API GET error: " + response.status);
+      }
+
       return await response.json();
     }
 
@@ -219,26 +271,58 @@
         })
       });
 
+      if (!response.ok) {
+        throw new Error("API POST error: " + response.status);
+      }
+
       return await response.json();
     }
 
     async function loadTesterNames() {
-      const names = await apiGet("getTesterNames");
       const select = document.getElementById("testerName");
 
       select.innerHTML = "";
 
-      const blank = document.createElement("option");
-      blank.value = "";
-      blank.textContent = "-- เลือกชื่อผู้ทดลอง --";
-      select.appendChild(blank);
+      const loading = document.createElement("option");
+      loading.value = "";
+      loading.textContent = "กำลังโหลดรายชื่อ...";
+      select.appendChild(loading);
 
-      names.forEach(function(name) {
+      try {
+        const names = await apiGet("getTesterNames");
+
+        select.innerHTML = "";
+
+        const blank = document.createElement("option");
+        blank.value = "";
+        blank.textContent = "-- เลือกชื่อผู้ทดลอง --";
+        select.appendChild(blank);
+
+        if (!Array.isArray(names) || names.length === 0) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "ไม่พบรายชื่อผู้ทดลอง";
+          select.appendChild(option);
+          return;
+        }
+
+        names.forEach(function(name) {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          select.appendChild(option);
+        });
+
+      } catch (error) {
+        console.error(error);
+
+        select.innerHTML = "";
+
         const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
+        option.value = "";
+        option.textContent = "โหลดรายชื่อไม่สำเร็จ";
         select.appendChild(option);
-      });
+      }
     }
 
     async function loadProducts() {
@@ -249,58 +333,133 @@
       document.getElementById("sampleDate").value = "";
       productData = [];
 
-      if (!testerName) return;
+      if (!testerName) {
+        sampleContainer.innerHTML =
+          '<div class="hint">กรุณาเลือกชื่อผู้ทดลองก่อน</div>';
+        return;
+      }
 
-      const products = await apiGet("getProductsByTester", {
-        testerName: testerName
-      });
+      sampleContainer.innerHTML =
+        '<div class="hint">กำลังโหลดสินค้า...</div>';
 
-      productData = products;
+      try {
+        const products = await apiGet("getProductsByTester", {
+          testerName: testerName
+        });
 
-      products.forEach(function(item) {
-        const label = document.createElement("label");
-        label.className = "toggle-option";
+        productData = Array.isArray(products) ? products : [];
 
-        const input = document.createElement("input");
-        input.type = "radio";
-        input.name = "sampleName";
-        input.value = item.testerId;
-        input.onchange = setDate;
+        sampleContainer.innerHTML = "";
 
-        const span = document.createElement("span");
-        span.textContent = item.testerId + " | " + item.sampleName;
+        if (productData.length === 0) {
+          sampleContainer.innerHTML =
+            '<div class="hint">ไม่พบสินค้า กรุณาตรวจสอบ Tester_List และ List!A2</div>';
+          return;
+        }
 
-        label.appendChild(input);
-        label.appendChild(span);
-        sampleContainer.appendChild(label);
-      });
+        productData.forEach(function(item) {
+          const testerId = String(item.testerId || "").trim();
+          const sampleName = String(item.sampleName || "").trim();
+          const sampleDate = String(item.sampleDate || "").trim();
+
+          const label = document.createElement("label");
+          label.className = "toggle-option";
+
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = "sampleName";
+          input.value = testerId;
+
+          input.dataset.testerId = testerId;
+          input.dataset.sampleName = sampleName;
+          input.dataset.sampleDate = sampleDate;
+
+          input.onchange = setDate;
+
+          const span = document.createElement("span");
+
+          if (testerId && sampleName) {
+            span.textContent = testerId + " | " + sampleName;
+          } else if (sampleName) {
+            span.textContent = sampleName;
+          } else if (testerId) {
+            span.textContent = testerId;
+          } else {
+            span.textContent = "(ไม่มีชื่อสินค้า)";
+          }
+
+          label.appendChild(input);
+          label.appendChild(span);
+          sampleContainer.appendChild(label);
+        });
+
+      } catch (error) {
+        console.error(error);
+
+        sampleContainer.innerHTML =
+          '<div class="hint">โหลดสินค้าไม่สำเร็จ กรุณาตรวจสอบ API_URL หรือ Deploy Apps Script</div>';
+      }
     }
 
     function setDate() {
-      const selected = document.querySelector('input[name="sampleName"]:checked');
-      const testerId = selected ? selected.value : "";
+      const selected =
+        document.querySelector('input[name="sampleName"]:checked');
 
-      const found = productData.find(item =>
-        String(item.testerId).trim() === String(testerId).trim()
-      );
+      if (!selected) {
+        document.getElementById("sampleDate").value = "";
+        return;
+      }
+
+      const selectedId =
+        String(selected.value || "").trim();
+
+      const found =
+        productData.find(function(item) {
+          return String(item.testerId || "").trim() === selectedId;
+        });
+
+      const dateFromRadio =
+        selected.dataset.sampleDate || "";
+
+      const dateFromData =
+        found ? String(found.sampleDate || "").trim() : "";
 
       document.getElementById("sampleDate").value =
-        found ? found.sampleDate : "";
+        dateFromRadio || dateFromData || "";
     }
 
     async function loadQuestion4List() {
-      const list = await apiGet("getQuestion4List");
-      fillToggle("sameOrNot", list, "sameOrNot");
+      try {
+        const list = await apiGet("getQuestion4List");
+        fillToggle("sameOrNot", list, "sameOrNot");
+      } catch (error) {
+        console.error(error);
+        document.getElementById("sameOrNot").innerHTML =
+          '<div class="hint">โหลดตัวเลือกข้อ 4 ไม่สำเร็จ</div>';
+      }
     }
 
     async function loadQuestion5List() {
-      const list = await apiGet("getQuestion5List");
-      fillToggle("favoriteSide", list, "favoriteSide");
+      try {
+        const list = await apiGet("getQuestion5List");
+        fillToggle("favoriteSide", list, "favoriteSide");
+      } catch (error) {
+        console.error(error);
+        document.getElementById("favoriteSide").innerHTML =
+          '<div class="hint">โหลดตัวเลือกข้อ 5 ไม่สำเร็จ</div>';
+      }
     }
 
     function fillToggle(elementId, list, name) {
       const container = document.getElementById(elementId);
+
       container.innerHTML = "";
+
+      if (!Array.isArray(list) || list.length === 0) {
+        container.innerHTML =
+          '<div class="hint">ไม่พบตัวเลือก</div>';
+        return;
+      }
 
       list.forEach(function(item) {
         const label = document.createElement("label");
@@ -322,31 +481,38 @@
 
     function showPopup(message) {
       const popup = document.getElementById("popup");
+
       popup.innerText = message;
       popup.classList.add("show");
 
-      setTimeout(() => {
+      setTimeout(function() {
         popup.classList.remove("show");
       }, 2500);
     }
 
     async function submitForm() {
+      const button = document.getElementById("submitBtn");
+
       const selectedRadio =
         document.querySelector('input[name="sampleName"]:checked');
 
       const selectedId =
-        selectedRadio ? selectedRadio.value : "";
+        selectedRadio ? String(selectedRadio.value || "").trim() : "";
 
       const found =
-        productData.find(item =>
-          String(item.testerId).trim() === String(selectedId).trim()
-        );
+        productData.find(function(item) {
+          return String(item.testerId || "").trim() === selectedId;
+        });
 
       const sameOrNot =
-        document.querySelector('input[name="sameOrNot"]:checked')?.value || "";
+        document.querySelector('input[name="sameOrNot"]:checked')
+          ? document.querySelector('input[name="sameOrNot"]:checked').value
+          : "";
 
       const favoriteSide =
-        document.querySelector('input[name="favoriteSide"]:checked')?.value || "";
+        document.querySelector('input[name="favoriteSide"]:checked')
+          ? document.querySelector('input[name="favoriteSide"]:checked').value
+          : "";
 
       if (!selectedId) {
         alert("⚠️ กรุณาเลือกสินค้า");
@@ -363,11 +529,36 @@
         return;
       }
 
+      const selectedText =
+        selectedRadio && selectedRadio.closest("label")
+          ? selectedRadio.closest("label").innerText.trim()
+          : "";
+
+      const sampleNameFromRadio =
+        selectedRadio
+          ? String(selectedRadio.dataset.sampleName || "").trim()
+          : "";
+
+      const sampleDateFromRadio =
+        selectedRadio
+          ? String(selectedRadio.dataset.sampleDate || "").trim()
+          : "";
+
+      const sampleNameForSheet =
+        sampleNameFromRadio ||
+        (found ? String(found.sampleName || "").trim() : "") ||
+        selectedText ||
+        selectedId;
+
+      const sampleDateForSheet =
+        sampleDateFromRadio ||
+        document.getElementById("sampleDate").value;
+
       const data = {
         testerName: document.getElementById("testerName").value,
-        sampleId: found?.testerId || "",
-        sampleName: found?.sampleName || "",
-        sampleDate: document.getElementById("sampleDate").value,
+        sampleId: selectedId,
+        sampleName: sampleNameForSheet,
+        sampleDate: sampleDateForSheet,
         leftFeeling: document.getElementById("leftFeeling").value,
         rightFeeling: document.getElementById("rightFeeling").value,
         sameOrNot: sameOrNot,
@@ -376,14 +567,34 @@
         favoriteReason: document.getElementById("favoriteReason").value
       };
 
-      await apiPost("saveResponse", data);
+      try {
+        button.disabled = true;
+        button.textContent = "กำลังบันทึก...";
 
-      showPopup("🎀 ขอบคุณค่า " + data.testerName + " 💖");
+        const result = await apiPost("saveResponse", data);
 
-      clearForm();
+        if (!result || result.status !== "success") {
+          alert("บันทึกไม่สำเร็จ กรุณาลองใหม่");
+          console.log(result);
+          return;
+        }
+
+        showPopup("🎀 ขอบคุณค่า " + data.testerName + " 💖");
+
+        clearForm();
+
+      } catch (error) {
+        console.error(error);
+        alert("บันทึกไม่สำเร็จ กรุณาตรวจสอบ Apps Script / API_URL");
+
+      } finally {
+        button.disabled = false;
+        button.textContent = "🎀 บันทึกข้อมูล 🎀";
+      }
     }
 
     function clearForm() {
+      document.getElementById("testerName").value = "";
       document.getElementById("sampleName").innerHTML = "";
       document.getElementById("sampleDate").value = "";
       document.getElementById("leftFeeling").value = "";
@@ -391,11 +602,11 @@
       document.getElementById("sameReason").value = "";
       document.getElementById("favoriteReason").value = "";
 
-      document.querySelectorAll('input[name="sameOrNot"]').forEach(el => {
+      document.querySelectorAll('input[name="sameOrNot"]').forEach(function(el) {
         el.checked = false;
       });
 
-      document.querySelectorAll('input[name="favoriteSide"]').forEach(el => {
+      document.querySelectorAll('input[name="favoriteSide"]').forEach(function(el) {
         el.checked = false;
       });
 
